@@ -3,6 +3,7 @@
 
 from datetime import datetime
 
+import openai
 from pydantic import Field
 
 from maasservicelayer.models.base import ResourceBuilder, UNSET, Unset
