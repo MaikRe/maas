@@ -20,7 +20,10 @@ from maascommon.enums.operations import (
 )
 from maasservicelayer.db.filters import QuerySpec
 from maasservicelayer.db.repositories.operations import OperationsClauseFactory
-from maasservicelayer.exceptions.catalog import NotFoundException
+from maasservicelayer.exceptions.catalog import (
+    ConflictException,
+    NotFoundException,
+)
 from maasservicelayer.models.base import ListResult
 from maasservicelayer.models.operations import (
     MachineOperationData,
@@ -29,6 +32,7 @@ from maasservicelayer.models.operations import (
 )
 from maasservicelayer.services import ServiceCollectionV3
 from maasservicelayer.services.operations import OperationsService
+from maasservicelayer.services.temporal import TemporalService
 from maasservicelayer.utils.date import utcnow
 from tests.maasapiserver.v3.api.public.handlers.base import (
     ApiCommonTests,
@@ -92,6 +96,10 @@ class TestOperationsApi(ApiCommonTests):
             Endpoint(
                 method="GET",
                 path=f"{self.BASE_PATH}/{TEST_OPERATION.uuid}/tasks",
+            ),
+            Endpoint(
+                method="DELETE",
+                path=f"{self.BASE_PATH}/{TEST_OPERATION.uuid}",
             ),
         ]
 
@@ -354,3 +362,68 @@ class TestOperationsApi(ApiCommonTests):
 
         response = await client.get(f"{self.BASE_PATH}/nonexistent-uuid/tasks")
         assert response.status_code == 404
+
+    async def test_cancel_operation(
+        self,
+        services_mock: ServiceCollectionV3,
+        mocked_api_client_user_with_permissions: Callable[..., AsyncClient],
+    ) -> None:
+        client = mocked_api_client_user_with_permissions()
+        _setup_openfga_mock(services_mock)
+        cancelling_operation = TEST_OPERATION.model_copy(
+            update={"status": OperationStatus.CANCELLING}
+        )
+        services_mock.operations = Mock(OperationsService)
+        services_mock.operations.cancel_for_user.return_value = (
+            cancelling_operation
+        )
+        services_mock.operations.get_type_specific_data.return_value = None
+        services_mock.temporal = Mock(TemporalService)
+        services_mock.temporal.cancel_workflow_by_operation_uuid = AsyncMock()
+
+        response = await client.delete(
+            f"{self.BASE_PATH}/{TEST_OPERATION.uuid}"
+        )
+        operation_response = OperationResponse(**response.json())
+        assert response.status_code == 202
+        assert operation_response.status == OperationStatus.CANCELLING
+        services_mock.operations.cancel_for_user.assert_called_once_with(
+            uuid=TEST_OPERATION.uuid, user_id=0, can_view_all=True
+        )
+        services_mock.temporal.cancel_workflow_by_operation_uuid.assert_awaited_once_with(
+            TEST_OPERATION.uuid
+        )
+
+    async def test_cancel_operation_not_found(
+        self,
+        services_mock: ServiceCollectionV3,
+        mocked_api_client_user_with_permissions: Callable[..., AsyncClient],
+    ) -> None:
+        client = mocked_api_client_user_with_permissions()
+        _setup_openfga_mock(services_mock)
+        services_mock.operations = Mock(OperationsService)
+        services_mock.operations.cancel_for_user.side_effect = (
+            NotFoundException()
+        )
+
+        response = await client.delete(
+            f"{self.BASE_PATH}/nonexistent-uuid"
+        )
+        assert response.status_code == 404
+
+    async def test_cancel_operation_conflict(
+        self,
+        services_mock: ServiceCollectionV3,
+        mocked_api_client_user_with_permissions: Callable[..., AsyncClient],
+    ) -> None:
+        client = mocked_api_client_user_with_permissions()
+        _setup_openfga_mock(services_mock)
+        services_mock.operations = Mock(OperationsService)
+        services_mock.operations.cancel_for_user.side_effect = (
+            ConflictException()
+        )
+
+        response = await client.delete(
+            f"{self.BASE_PATH}/{TEST_OPERATION.uuid}"
+        )
+        assert response.status_code == 409
