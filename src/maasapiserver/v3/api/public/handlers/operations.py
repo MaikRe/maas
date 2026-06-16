@@ -1,6 +1,8 @@
 # Copyright 2026 Canonical Ltd.  This software is licensed under the
 # GNU Affero General Public License version 3 (see the file LICENSE).
 
+from typing import Annotated
+
 from fastapi import Depends
 
 from maasapiserver.common.api.base import Handler, handler
@@ -48,12 +50,12 @@ class OperationsHandler(Handler):
     )
     async def list_operations(
         self,
-        filters: OperationFilterParams = Depends(),  # noqa: B008
-        pagination_params: PaginationParams = Depends(),  # noqa: B008
-        authenticated_user: AuthenticatedUser | None = Depends(  # noqa: B008
-            get_authenticated_user
-        ),
-        services: ServiceCollectionV3 = Depends(services),  # noqa: B008
+        filters: Annotated[OperationFilterParams, Depends()],
+        pagination_params: Annotated[PaginationParams, Depends()],
+        authenticated_user: Annotated[
+            AuthenticatedUser | None, Depends(get_authenticated_user)
+        ],
+        services: Annotated[ServiceCollectionV3, Depends(services)],
     ) -> OperationsListResponse:
         """List all operations with pagination and filtering."""
 
@@ -111,10 +113,10 @@ class OperationsHandler(Handler):
     async def get_operation(
         self,
         operation_uuid: str,
-        authenticated_user: AuthenticatedUser | None = Depends(  # noqa: B008
-            get_authenticated_user
-        ),
-        services: ServiceCollectionV3 = Depends(services),  # noqa: B008
+        authenticated_user: Annotated[
+            AuthenticatedUser | None, Depends(get_authenticated_user)
+        ],
+        services: Annotated[ServiceCollectionV3, Depends(services)],
     ) -> OperationResponse:
         """Get a specific operation by UUID."""
 
@@ -157,11 +159,11 @@ class OperationsHandler(Handler):
     async def get_operation_tasks(
         self,
         operation_uuid: str,
-        pagination_params: PaginationParams = Depends(),  # noqa: B008
-        authenticated_user: AuthenticatedUser | None = Depends(  # noqa: B008
-            get_authenticated_user
-        ),
-        services: ServiceCollectionV3 = Depends(services),  # noqa: B008
+        pagination_params: Annotated[PaginationParams, Depends()],
+        authenticated_user: Annotated[
+            AuthenticatedUser | None, Depends(get_authenticated_user)
+        ],
+        services: Annotated[ServiceCollectionV3, Depends(services)],
     ) -> OperationTasksListResponse:
         """Get a paginated list of tasks for a specific operation."""
 
