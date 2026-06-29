@@ -83,6 +83,13 @@ Description: Machine resource binaries for MAAS
  Contains architecture-specific binary blobs that are served by MAAS
  to provisioning machines during deployment.
 
+Package: maas-switch-provisioner
+Architecture: any
+Depends: ${misc:Depends}
+Description: ONIE switch provisioner binary for MAAS
+ Contains the maas-switch-provisioner binary that is downloaded and
+ executed on ONIE-capable network switches during MAAS provisioning.
+
 Package: maas-region-api
 Architecture: any
 Pre-Depends: debconf

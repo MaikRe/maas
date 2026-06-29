@@ -1,10 +1,12 @@
 # Copyright 2026 Canonical Ltd.  This software is licensed under the
 # GNU Affero General Public License version 3 (see the file LICENSE).
 
+import uuid
 from datetime import datetime
 
 from pydantic import Field
 
+from maascommon.enums.switch import SwitchLogCategory, SwitchProvisioningStatus
 from maasservicelayer.models.base import ResourceBuilder, UNSET, Unset
 
 
@@ -17,6 +19,8 @@ class SwitchBuilder(ResourceBuilder):
 
     created: datetime | Unset = Field(default=UNSET)
     target_image_id: int | None | Unset = Field(default=UNSET)
+    switch_uuid: uuid.UUID | Unset = Field(default=UNSET)
+    status: SwitchProvisioningStatus | Unset = Field(default=UNSET)
     updated: datetime | Unset = Field(default=UNSET)
 
 
@@ -30,4 +34,24 @@ class SwitchWithTargetImageBuilder(ResourceBuilder):
     created: datetime | Unset = Field(default=UNSET)
     target_image: str | None | Unset = Field(default=UNSET)
     target_image_id: int | None | Unset = Field(default=UNSET)
+    switch_uuid: uuid.UUID | Unset = Field(default=UNSET)
+    status: SwitchProvisioningStatus | Unset = Field(default=UNSET)
     updated: datetime | Unset = Field(default=UNSET)
+
+
+class SwitchScriptBuilder(ResourceBuilder):
+    created: datetime | Unset = Field(default=UNSET)
+    name: str | Unset = Field(default=UNSET)
+    description: str | Unset = Field(default=UNSET)
+    content: str | Unset = Field(default=UNSET)
+    updated: datetime | Unset = Field(default=UNSET)
+
+
+class SwitchLogBuilder(ResourceBuilder):
+    created: datetime | Unset = Field(default=UNSET)
+    switch_id: int | Unset = Field(default=UNSET)
+    log_category: SwitchLogCategory | Unset = Field(default=UNSET)
+    exit_code: int | Unset = Field(default=UNSET)
+    output: str | Unset = Field(default=UNSET)
+    updated: datetime | Unset = Field(default=UNSET)
+

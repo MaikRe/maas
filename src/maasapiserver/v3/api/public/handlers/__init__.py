@@ -48,6 +48,9 @@ from maasapiserver.v3.api.public.handlers.subnets import (
     SubnetsHandler,
     UISubnetsHandler,
 )
+from maasapiserver.v3.api.public.handlers.switch_installer import (
+    SwitchInstallerHandler,
+)
 from maasapiserver.v3.api.public.handlers.switches import SwitchesHandler
 from maasapiserver.v3.api.public.handlers.tags import TagsHandler
 from maasapiserver.v3.api.public.handlers.usergroups import UserGroupsHandler
@@ -86,6 +89,7 @@ APIv3 = API(
         SshKeysHandler(),
         SSLKeysHandler(),
         SubnetsHandler(),
+        SwitchInstallerHandler(),
         SwitchesHandler(),
         TagsHandler(),
         UserGroupsHandler(),

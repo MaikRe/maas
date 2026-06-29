@@ -24,7 +24,7 @@ from sqlalchemy import (
     text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, CIDR, INET, JSONB, OID
+from sqlalchemy.dialects.postgresql import ARRAY, CIDR, INET, JSONB, OID, UUID
 from sqlalchemy.sql.schema import PrimaryKeyConstraint
 
 METADATA = MetaData()
@@ -2299,7 +2299,88 @@ SwitchTable = Table(
         ),
         nullable=True,
     ),
+    Column("switch_uuid", UUID(), nullable=False, unique=True),
+    Column(
+        "status",
+        String(32),
+        nullable=False,
+        server_default="NOT_PROVISIONED",
+    ),
     Index("maasserver_switch_target_image_id_idx", "target_image_id"),
+)
+
+SwitchScriptsTable = Table(
+    "switch_scripts",
+    METADATA,
+    Column("id", BigInteger, Identity(), primary_key=True),
+    Column("created", DateTime(timezone=True), nullable=False),
+    Column("updated", DateTime(timezone=True), nullable=False),
+    Column("name", String(255), nullable=False, unique=True),
+    Column("description", Text(), nullable=False, server_default=""),
+    Column("content", Text(), nullable=False),
+)
+
+SwitchScriptAssignmentTable = Table(
+    "switch_script_assignment",
+    METADATA,
+    Column("id", BigInteger, Identity(), primary_key=True),
+    Column("created", DateTime(timezone=True), nullable=False),
+    Column("updated", DateTime(timezone=True), nullable=False),
+    Column(
+        "switch_id",
+        BigInteger,
+        ForeignKey(
+            "maasserver_switch.id",
+            ondelete="CASCADE",
+            deferrable=True,
+            initially="DEFERRED",
+        ),
+        nullable=False,
+    ),
+    Column(
+        "script_id",
+        BigInteger,
+        ForeignKey(
+            "switch_scripts.id",
+            ondelete="CASCADE",
+            deferrable=True,
+            initially="DEFERRED",
+        ),
+        nullable=False,
+    ),
+    UniqueConstraint(
+        "switch_id",
+        "script_id",
+        name="switch_script_assignment_switch_script_uniq",
+    ),
+    Index("switch_script_assignment_switch_id_idx", "switch_id"),
+)
+
+SwitchLogsTable = Table(
+    "switch_logs",
+    METADATA,
+    Column("id", BigInteger, Identity(), primary_key=True),
+    Column("created", DateTime(timezone=True), nullable=False),
+    Column("updated", DateTime(timezone=True), nullable=False),
+    Column(
+        "switch_id",
+        BigInteger,
+        ForeignKey(
+            "maasserver_switch.id",
+            ondelete="CASCADE",
+            deferrable=True,
+            initially="DEFERRED",
+        ),
+        nullable=False,
+    ),
+    Column("log_category", String(32), nullable=False),
+    Column("exit_code", Integer(), nullable=False),
+    Column("output", Text(), nullable=False),
+    CheckConstraint(
+        "log_category IN ('WRAPPER', 'NOS_INSTALLATION', 'PROVISIONING_SCRIPT')",
+        name="switch_logs_log_category_check",
+    ),
+    Index("switch_logs_switch_id_idx", "switch_id"),
 )
 
 SubnetTable = Table(

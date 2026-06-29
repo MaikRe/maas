@@ -131,10 +131,10 @@ class ONIEBootMetadata(BootMethodMetadata):
     @property
     def bootloader_path(self) -> str:
         # Unlike other boot methods that return static bootloader files, ONIE requires
-        # a v3 API endpoint to dynamically determine the NOS installer image based on
-        # the switch's configuration stored in the database.
+        # a v3 API endpoint to dynamically generate a templated provisioning script
+        # based on the switch's configuration stored in the database.
         # This path is returned to ONIE in the DHCP response as the onie.installer_url.
-        return "MAAS/a/v3/nos-installer"
+        return "MAAS/a/v3/switch-installer"
 
     @property
     def arch_octet(self) -> None:

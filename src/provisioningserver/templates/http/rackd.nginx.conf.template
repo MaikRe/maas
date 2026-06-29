@@ -38,6 +38,11 @@ server {
         gzip on;
     }
 
+    location /switch-provisioner/ {
+        alias {{switch_provisioner_dir}}/switch-provisioner/;
+        autoindex off;
+    }
+
     # MAAS Agent (supervised by rackd) implements caching HTTP Proxy that is
     # configured to cache boot resources. When MAAS is initialised as region+rack
     # regiond will keep boot resources under image-storage, hence we can serve

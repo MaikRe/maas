@@ -182,6 +182,7 @@ class RackHTTPService(TimerService):
                     "upstream_http": list(sorted(upstream_http)),
                     "resource_root": self._resource_root,
                     "machine_resources": str(root_prefix / "usr/share/maas"),
+                    "switch_provisioner_dir": str(root_prefix / "usr/sbin"),
                     "maas_agent_httpproxy_socket_path": httpproxy_socket_path,
                     "maas_agent_http_socket_path": agent_http_socket_path,
                     "boot_resources_dir": get_maas_data_path("image-storage"),

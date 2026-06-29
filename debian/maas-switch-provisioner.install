@@ -1,0 +1,5 @@
+#  Copyright 2026 Canonical Ltd.  This software is licensed under the
+#  GNU Affero General Public License version 3 (see the file LICENSE).
+usr/sbin/switch-provisioner/amd64/maas-switch-provisioner
+usr/sbin/switch-provisioner/arm64/maas-switch-provisioner
+usr/sbin/switch-provisioner/ppc64el/maas-switch-provisioner
